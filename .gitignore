@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+paper/tables/*.tex
+paper/figs/*.pdf

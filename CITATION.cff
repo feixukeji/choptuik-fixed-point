@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software or the tabulated solution, please cite the paper below."
+title: "Choptuik critical solution as a fixed point of an evolution map"
+abstract: "Solver, analysis scripts and archived output for the computation of
+  the Choptuik critical solution as a fixed point of a null code's evolution
+  map, and of its l=0 Floquet spectrum."
+authors:
+  - family-names: Sun
+    given-names: Xulei
+    email: xulei.sun@yale.edu
+    affiliation: "Yale University"
+license: MIT
+repository-code: "https://github.com/feixukeji/choptuik-fixed-point"
+preferred-citation:
+  type: article
+  title: "Choptuik critical solution as a fixed point of an evolution map, and its l=0 Floquet spectrum"
+  authors:
+    - family-names: Sun
+      given-names: Xulei
+  year: 2026

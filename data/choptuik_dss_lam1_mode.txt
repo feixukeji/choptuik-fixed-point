@@ -1,0 +1,253 @@
+# Discretely self-similar (Choptuik) solution of the Einstein / massless-scalar
+# system in spherical symmetry, from the fixed-point equation
+#     S_(Delta/2)[H] + H = 0
+# solved by black-box Newton-Krylov with no tuning of initial data
+# (src/dss_newton.py; see docs/09_dss_fixed_point.md).
+#
+# Grid:         X is PIECEWISE uniform in the first three files, with step
+#               0.01 on [0, 0.5), 0.025 on [0.5, 2) and 0.05 on [2, 4];
+#               151 rows.  The adjoint file uses the 224 Chebyshev
+#               collocation nodes of its own solve instead, at full double
+#               precision, for the reason given in its header (see below).
+#
+# Coordinates:  T = -ln(u* - u),  X = r/(u* - u)
+# State:        H(X) = h = d(r phi)/dr        (dimensionless, scale invariant)
+# Constraints:  Hbar = (1/X) int_0^X H dX  ( = phi exactly )
+#               ln g = 4 pi int_0^X (H-Hbar)^2 dX/X
+#               gbar = (1/X) int_0^X g dX
+# Evolution:    H_T = -(X - gbar/2) H_X + (g-gbar)(H-Hbar)/(2X)
+# Antiperiodic: H(T + Delta/2, X) = -H(T, X)
+#
+# Delta   = 3.445452403(4)  value adopted in the paper, from the Chebyshev
+#                          sequence; the bracket is that sequence's own
+#                          scatter over resolution, not an error bound
+#                          Martin-Garcia & Gundlach 2003: 3.445452402(3)
+#           Each file also carries the Delta of the solve it came from, with
+#           that solve, below:
+#             profile, growing mode      finite differences, N = 800
+#             lam_1 mode, lam_1 adjoint  Chebyshev, N = 224
+# gamma   = 0.3739608      = 1/lam_0, from lam_0 = 2.674077202
+# lam_0   = +2.6740772     the only growing mode in this sector
+# lam_g   = +1.0000000     gauge mode u* -> u* + d; exactly 1
+# lam     =  0 (twice)     phase (T -> T + a) and constant (H -> H + c)
+# lam_1   = -0.8948202     least-damped decaying mode; first determination
+# mu      =  0.6139        transverse Floquet exponent of the self-similarity
+#                          horizon, treated as the repelling periodic orbit of
+#                          the ray equation.  A RAY starting a distance eps
+#                          inside it reaches the centre at T = (1/mu) ln(1/eps)
+#                          + C(T) + o(1) as eps -> 0, with C of period
+#                          Delta/2.  Only the log is fixed by mu: at arrival
+#                          the separation is O(1), so the linearization does
+#                          not reach the endpoint and C also carries the
+#                          nonlinear transit to the centre.  Measured over 7.2
+#                          half-periods the remainder oscillates between 2.19
+#                          and 2.43 without settling; one harmonic of period
+#                          Delta/2 accounts for 62% of the variance.  This is a
+#                          statement about characteristics only: the size of a
+#                          field perturbation inside the horizon is set by the
+#                          Floquet spectrum, and the growing, gauge and neutral
+#                          directions do not decay (Sec. VI D of the paper).
+# X_h(0)  = 1.352471       horizon periodic orbit at the reference phase
+# max X_h = 1.560820       its maximum over the cycle
+#
+# Parity under Delta/2 (from the sign of the half-period multiplier nu):
+#   lam_0, lam_g, phase  are ANTIperiodic -> odd harmonics only (like phi)
+#   constant, lam_1      are  periodic    -> even harmonics only
+#
+# Phase is an exact lam = 0 freedom, so every T-translate is equally a solution.
+#
+# Least-damped decaying mode, from the CHEBYSHEV fixed point at N = 224,
+# Xmax = 4 (Delta = 3.4454523478).  lam_1 = -0.8948202,
+# nu_1 = +0.2140533 > 0 -> PERIODIC under Delta/2, EVEN harmonics.
+# Eigen-residual 1.0e-14; eigenvector smooth (1e-13 of its Chebyshev energy
+# above mode 2N/3).  N = 208 and N = 224 agree to 6 digits.
+#
+# On the outer boundary: at FIXED N a scan in Xmax moves the boundary and also
+# coarsens the grid near the horizon, so it does not bound the sensitivity to
+# either separately -- and at N = 224 the joint spread over Xmax = 3..6
+# (5.9e-4) is in fact SMALLER than the fixed-domain resolution spread
+# (2.4e-3), i.e. the two effects partly cancel.  Matching the near-horizon
+# node spacing h (the gap bracketing X_h = 1.3525) by raising N with Xmax
+# comes closer to a pure domain scan:
+#     (N=176, Xmax=3, h=0.02682, 83 nodes inside)  lam_1 = -0.893643
+#     (N=224, Xmax=4, h=0.02671, 89 nodes inside)  lam_1 = -0.894820
+#     (N=262, Xmax=5, h=0.02667, 91 nodes inside)  lam_1 = -0.895916
+#     (N=298, Xmax=6, h=0.02651, 94 nodes inside)  lam_1 = -0.898995
+# but not to a pure one: the interior node count still grows, and on a global
+# collocation grid every node is fixed by (N, Xmax), so no control moves the
+# boundary alone.  So the honest number is the ENVELOPE over the whole
+# two-parameter family: over the 15 converged solves with N >= 176 whose
+# leading decaying eigenvalue is real and whose outer boundary satisfies the
+# outflow condition (Xmax = 3..6, N = 176..298), lam_1 is
+# in [-0.8990, -0.8936], a spread of 5.4e-3 -- half the quoted +-0.010 -- while
+# the next eigenvalue below spans 0.59 over the same solves, a factor of 110.
+# Table III of the paper carries this; paper_tables._matched() regenerates it.
+#
+# This fixed point sits 0.0075 slow-time units (0.22% of an echo) from the
+# phase of choptuik_dss_profile.txt.
+#
+# Its own background H is therefore given here alongside the mode, so that mode
+# and background are consistent.  It is RESAMPLED onto the piecewise-uniform
+# grid; for a projection with the adjoint use the background column of
+# choptuik_dss_lam1_adjoint.txt instead, which is on the collocation nodes.
+#
+# dH_1 is the RIGHT eigenvector, J v = nu_1 v: the response.  Normalised to
+# unit maximum; sign fixed by requiring dH_1 > 0 at the outer edge.  Only 26%
+# of its |v|^2 dX weight lies inside max_T X_h = 1.5608 (the unweighted node
+# sum would say 18%; the dX measure is the one quoted).  The LEFT eigenvector
+# -- the receptivity, and the instrument that reads a_1 out of evolution data
+# -- is in choptuik_dss_lam1_adjoint.txt; it is not tabulated here because it
+# is not a smooth function of X and must not be interpolated.
+#
+#      X            H              dH_1
+    0.000000000   -0.522253193   -0.249318356
+    0.010000000   -0.504186545   -0.154158694
+    0.020000000   -0.485346500   -0.084929120
+    0.030000000   -0.465909958   -0.037897449
+    0.040000000   -0.446030478   -0.009353918
+    0.050000000   -0.425838313    0.004175807
+    0.060000000   -0.405441702    0.005815956
+    0.070000000   -0.384928866   -0.001714627
+    0.080000000   -0.364370486   -0.016103548
+    0.090000000   -0.343822121   -0.035420873
+    0.100000000   -0.323326569   -0.058083975
+    0.110000000   -0.302916093   -0.082810903
+    0.120000000   -0.282614332   -0.108577017
+    0.130000000   -0.262437985   -0.134572799
+    0.140000000   -0.242398261   -0.160167422
+    0.150000000   -0.222502107   -0.184874715
+    0.160000000   -0.202753246   -0.208322276
+    0.170000000   -0.183153064   -0.230229319
+    0.180000000   -0.163701352   -0.250384267
+    0.190000000   -0.144396958   -0.268628375
+    0.200000000   -0.125238347   -0.284844777
+    0.210000000   -0.106224099   -0.298947020
+    0.220000000   -0.087353376   -0.310872573
+    0.230000000   -0.068626371   -0.320579335
+    0.240000000   -0.050044716   -0.328042320
+    0.250000000   -0.031611865   -0.333251678
+    0.260000000   -0.013333541   -0.336212292
+    0.270000000    0.004781751   -0.336942701
+    0.280000000    0.022722377   -0.335475951
+    0.290000000    0.040473170   -0.331860645
+    0.300000000    0.058014653   -0.326162818
+    0.310000000    0.075322701   -0.318470103
+    0.320000000    0.092368282   -0.308893855
+    0.330000000    0.109116379   -0.297575020
+    0.340000000    0.125525846   -0.284689540
+    0.350000000    0.141549394   -0.270451964
+    0.360000000    0.157132248   -0.255130890
+    0.370000000    0.172213072   -0.239049336
+    0.380000000    0.186723670   -0.222591277
+    0.390000000    0.200588829   -0.206211190
+    0.400000000    0.213728329   -0.190417870
+    0.410000000    0.226056674   -0.175783731
+    0.420000000    0.237486198   -0.162921289
+    0.430000000    0.247928111   -0.152476449
+    0.440000000    0.257296764   -0.145094122
+    0.450000000    0.265510879   -0.141397966
+    0.460000000    0.272500186   -0.141929577
+    0.470000000    0.278205609   -0.147138504
+    0.480000000    0.282586623   -0.157316747
+    0.490000000    0.285621568   -0.172590476
+    0.500000000    0.287311477   -0.192885416
+    0.525000000    0.285875427   -0.263207911
+    0.550000000    0.277263922   -0.353129504
+    0.575000000    0.263165530   -0.449041118
+    0.600000000    0.245545819   -0.537998369
+    0.625000000    0.226236714   -0.611318540
+    0.650000000    0.206680977   -0.665427056
+    0.675000000    0.187858198   -0.700755641
+    0.700000000    0.170336152   -0.719938279
+    0.725000000    0.154375685   -0.726320384
+    0.750000000    0.140036102   -0.723133489
+    0.775000000    0.127258078   -0.713102668
+    0.800000000    0.115921184   -0.698352690
+    0.825000000    0.105880212   -0.680476060
+    0.850000000    0.096986314   -0.660627865
+    0.875000000    0.089098246   -0.639619675
+    0.900000000    0.082087587   -0.618013566
+    0.925000000    0.075840478   -0.596196248
+    0.950000000    0.070257500   -0.574424770
+    0.975000000    0.065252636   -0.552863583
+    1.000000000    0.060751850   -0.531615099
+    1.025000000    0.056691577   -0.510740861
+    1.050000000    0.053017283   -0.490276232
+    1.075000000    0.049682162   -0.470234569
+    1.100000000    0.046645982   -0.450615200
+    1.125000000    0.043874094   -0.431409144
+    1.150000000    0.041336592   -0.412603445
+    1.175000000    0.039007588   -0.394182770
+    1.200000000    0.036864617   -0.376129781
+    1.225000000    0.034888124   -0.358425110
+    1.250000000    0.033061037   -0.341049253
+    1.275000000    0.031368411   -0.323983292
+    1.300000000    0.029797118   -0.307209253
+    1.325000000    0.028335602   -0.290710624
+    1.350000000    0.026973653   -0.274470883
+    1.375000000    0.025702230   -0.258474267
+    1.400000000    0.024513305   -0.242705417
+    1.425000000    0.023399730   -0.227151055
+    1.450000000    0.022355124   -0.211798539
+    1.475000000    0.021373776   -0.196636631
+    1.500000000    0.020450567   -0.181654542
+    1.525000000    0.019580890   -0.166842688
+    1.550000000    0.018760595   -0.152191762
+    1.575000000    0.017985935   -0.137692391
+    1.600000000    0.017253518   -0.123336459
+    1.625000000    0.016560270   -0.109117234
+    1.650000000    0.015903394   -0.095028567
+    1.675000000    0.015280345   -0.081063024
+    1.700000000    0.014688805   -0.067214590
+    1.725000000    0.014126656   -0.053478089
+    1.750000000    0.013591954   -0.039848902
+    1.775000000    0.013082920   -0.026321529
+    1.800000000    0.012597921   -0.012890306
+    1.825000000    0.012135458    0.000448429
+    1.850000000    0.011694146    0.013697481
+    1.875000000    0.011272706    0.026860924
+    1.900000000    0.010869961    0.039942539
+    1.925000000    0.010484820    0.052946390
+    1.950000000    0.010116275    0.065874978
+    1.975000000    0.009763388    0.078731247
+    2.000000000    0.009425290    0.091518395
+    2.050000000    0.008790278    0.116896235
+    2.100000000    0.008205417    0.142027494
+    2.150000000    0.007665637    0.166929268
+    2.200000000    0.007166508    0.191616756
+    2.250000000    0.006704146    0.216102952
+    2.300000000    0.006275128    0.240398883
+    2.350000000    0.005876431    0.264515989
+    2.400000000    0.005505373    0.288465646
+    2.450000000    0.005159567    0.312258274
+    2.500000000    0.004836884    0.335902076
+    2.550000000    0.004535417    0.359404400
+    2.600000000    0.004253455    0.382772280
+    2.650000000    0.003989460    0.406012168
+    2.700000000    0.003742043    0.429129815
+    2.750000000    0.003509949    0.452130510
+    2.800000000    0.003292042    0.475019459
+    2.850000000    0.003087288    0.497802016
+    2.900000000    0.002894748    0.520483837
+    2.950000000    0.002713562    0.543069929
+    3.000000000    0.002542949    0.565564022
+    3.050000000    0.002382189    0.587968295
+    3.100000000    0.002230627    0.610285166
+    3.150000000    0.002087658    0.632517556
+    3.200000000    0.001952728    0.654668739
+    3.250000000    0.001825326    0.676741842
+    3.300000000    0.001704979    0.698739360
+    3.350000000    0.001591253    0.720663745
+    3.400000000    0.001483743    0.742517696
+    3.450000000    0.001382075    0.764303801
+    3.500000000    0.001285904    0.786024652
+    3.550000000    0.001194906    0.807682102
+    3.600000000    0.001108783    0.829277249
+    3.650000000    0.001027256    0.850811533
+    3.700000000    0.000950066    0.872286742
+    3.750000000    0.000876972    0.893705158
+    3.800000000    0.000807747    0.915068781
+    3.850000000    0.000742180    0.936378810
+    3.900000000    0.000680073    0.957636435
+    3.950000000    0.000621242    0.978842950
+    4.000000000    0.000565514    1.000000000

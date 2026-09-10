@@ -1,0 +1,135 @@
+[
+ {
+  "tag": "O1_x1",
+  "x": 1,
+  "nbisect": 4,
+  "q": 0.7891560644539733,
+  "isnap": 42,
+  "rho_over_rref": 3.0,
+  "Dtrial": 3.05,
+  "single": [
+   1.338059563070678,
+   0.4713709493422386
+  ],
+  "ms": [
+   NaN,
+   Infinity
+  ],
+  "ok_single": false,
+  "ok_ms": false
+ },
+ {
+  "tag": "O1_x2",
+  "x": 2,
+  "nbisect": 7,
+  "q": 0.5190749565960522,
+  "isnap": 48,
+  "rho_over_rref": 2.6,
+  "Dtrial": 2.6,
+  "single": [
+   1.767684897328609,
+   0.5027563496139195
+  ],
+  "ms": [
+   NaN,
+   Infinity
+  ],
+  "ok_single": false,
+  "ok_ms": false
+ },
+ {
+  "tag": "O1_x3",
+  "x": 3,
+  "nbisect": 10,
+  "q": 0.31116962491289313,
+  "isnap": 51,
+  "rho_over_rref": 2.2,
+  "Dtrial": 2.6,
+  "single": [
+   3.494255635520206,
+   0.12812812555995823
+  ],
+  "ms": [
+   NaN,
+   Infinity
+  ],
+  "ok_single": false,
+  "ok_ms": false
+ },
+ {
+  "tag": "O1_x4",
+  "x": 4,
+  "nbisect": 14,
+  "q": 0.1824663724894102,
+  "isnap": 63,
+  "rho_over_rref": 2.2,
+  "Dtrial": 3.3499999999999996,
+  "single": [
+   3.4954434250852318,
+   0.0628659877705459
+  ],
+  "ms": [
+   NaN,
+   Infinity
+  ],
+  "ok_single": false,
+  "ok_ms": false
+ },
+ {
+  "tag": "O1_x5",
+  "x": 5,
+  "nbisect": 17,
+  "q": 0.15842101194423444,
+  "isnap": 63,
+  "rho_over_rref": 2.2,
+  "Dtrial": 3.3499999999999996,
+  "single": [
+   3.4784289654313874,
+   0.08151033105567096
+  ],
+  "ms": [
+   NaN,
+   Infinity
+  ],
+  "ok_single": false,
+  "ok_ms": false
+ },
+ {
+  "tag": "O1_x6",
+  "x": 6,
+  "nbisect": 20,
+  "q": 0.08617376666978777,
+  "isnap": 105,
+  "rho_over_rref": 1.8,
+  "Dtrial": 3.4999999999999996,
+  "single": [
+   3.445156614463359,
+   4.841411803261936e-14
+  ],
+  "ms": [
+   NaN,
+   Infinity
+  ],
+  "ok_single": true,
+  "ok_ms": false
+ },
+ {
+  "tag": "O1_x8",
+  "x": 8,
+  "nbisect": 27,
+  "q": 0.0707520414012511,
+  "isnap": 105,
+  "rho_over_rref": 1.8,
+  "Dtrial": 3.4999999999999996,
+  "single": [
+   3.4451566140379266,
+   3.574343006874551e-14
+  ],
+  "ms": [
+   NaN,
+   Infinity
+  ],
+  "ok_single": true,
+  "ok_ms": false
+ }
+]
