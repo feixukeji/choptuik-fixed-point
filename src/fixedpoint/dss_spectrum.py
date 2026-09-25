@@ -9,8 +9,8 @@ Four diagnostics, all run off a converged fixed point (dss_newton / dss_spec_che
             phase     T -> T + a                     nu = -1
             gauge     u* -> u* + d, i.e.
                       dH = -d e^T (H_T + X H_X)      nu = -e^{Delta/2}
-          (docs/08 wrote the gauge mode as -d e^T Z*'(T) for the CENTRAL field,
-          which is the same thing there because X H_X vanishes at X = 0.)
+          (For the CENTRAL field this is -d e^T Z*'(T), the same thing there
+          because X H_X vanishes at X = 0.)
 
   match   Pair eigenvalues between two resolutions and report which survive.
 
@@ -21,19 +21,22 @@ Four diagnostics, all run off a converged fixed point (dss_newton / dss_spec_che
           known directions (oblique projection with the left eigenvectors),
           optionally filtered to the first m Chebyshev modes each step to
           suppress grid-scale contamination.  This is the quantity a
-          near-critical evolution experiment actually measures (docs/08 D).
+          near-critical evolution experiment actually measures.
 
   horizon The self-similarity horizon as the repelling periodic orbit of
           dX/dT = X - gbar/2, with its multiplier over half a period.
 """
+import json
 import os
 import sys
 import numpy as np
 from scipy.optimize import brentq
 from scipy.interpolate import CubicSpline
-import dss_core as dc, dss_cheb as cb
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from fixedpoint import dss_core as dc, dss_cheb as cb
 
-OUT = "out/dss"
+OUT = out("fixedpoint")
 
 
 def load(kind, N, Xmax=4.0, wd=7):
@@ -123,6 +126,40 @@ def decay(kind, Ns, ms=(None,), Xmax=4.0, wd=7, ntrial=40, nit=10, seed=1):
                 f"{a[:,k].mean():+.3f}[{a[:,k].std():.2f}]" for k in range(min(nit, 8))))
 
 
+def filter_scan(Ns=(400, 800), Xmax=4.0, wd=7, ntrial=20, nit=20, seed=1,
+                ms={400: (30, 40, 50, 60, 70, 80, 100),
+                    800: (40, 50, 60, 70, 80, 100, 120, 160, 200)}):
+    """Table IV of the paper: the banded, deflated rate against the cutoff m.
+
+    `decay` with the settings the table quotes -- 20 smooth random starts,
+    filter after each application of the map -- keeping, per (N, m), the mean
+    and the spread (population s.d.) over starts of the rate at iterate `nit`.
+    Writes out/fixedpoint/filter_scan.json, which make_tables.t_filter reads."""
+    res = {}
+    for N in Ns:
+        S, J, D, X, H, dTH, dXH = load("fd", N, Xmax, wd)
+        P, _ = deflator(J, X, H, dTH, dXH)
+        wts = np.full(N, X[1] - X[0])
+        res[str(N)] = {}
+        for m in ms[N]:
+            Op = cheb_filter(X, m, Xmax, wts) @ (P @ J)
+            rng = np.random.default_rng(seed)
+            last = []
+            for _ in range(ntrial):
+                c = rng.normal(size=8)
+                v = Op @ sum(c[j] * np.cos(j * np.pi * X / Xmax) for j in range(8))
+                v /= np.linalg.norm(v)
+                for _ in range(nit):
+                    u = Op @ v; nn = np.linalg.norm(u); v = u / nn
+                last.append(2 * np.log(nn) / D)
+            res[str(N)][str(m)] = [float(np.mean(last)), float(np.std(last))]
+            print(f"  N={N} m={m:4d}: {np.mean(last):+.4f} [{np.std(last):.1e}]",
+                  flush=True)
+    with open(f"{OUT}/filter_scan.json", "w") as fh:
+        json.dump(res, fh)
+    return res
+
+
 def count(kind, Ns, Xmax=4.0, wd=7):
     print("     N   [-1,-0.1]  [-2,-1]  [-4,-2]  [<-4]   Re>0.1   total")
     for N in Ns:
@@ -172,20 +209,7 @@ def horizon(kind="fd", N=800, Xmax=4.0, wd=7, nT=1200):
                   f"  mu=(2/Delta)ln sigma={2*ls/D:.6f}")
 
 
-if __name__ == "__main__":
-    w = sys.argv[1] if len(sys.argv) > 1 else "all"
-    if w in ("exact", "all"):
-        print("== exact eigenvectors =="); check_exact("fd", (200, 400, 800))
-    if w in ("count", "all"):
-        print("\n== eigenvalue counts, finite difference =="); count("fd", (200, 400, 800))
-    if w in ("decay", "all"):
-        print("\n== smooth-perturbation decay rate ==")
-        decay("fd", (400, 800), ms=(None, 40, 60))
-    if w in ("horizon", "all"):
-        print("\n== self-similarity horizon =="); horizon()
-
-
-def horizon_scalars(kind="fd", N=800, Xmax=4.0, wd=7, nT=1600):
+def horizon_scalars(kind="fd", N=800, Xmax=4.0, wd=7, nT=1600, save=True):
     """Invariants of the self-similarity horizon as a periodic orbit.
 
     Reports the Floquet multiplier of the orbit over a FULL period -- that is
@@ -257,6 +281,9 @@ def horizon_scalars(kind="fd", N=800, Xmax=4.0, wd=7, nT=1600):
                        a2_mean=float(a2 / (0.5 * D)), T=Ts, orbit=orb,
                        zero_min=float(Z.min()), zero_max=float(Z.max()),
                        A_at_Xh0=float(CubicSpline(X, A[0])(r)))
+    if out is not None and save:
+        # Table VII and Fig. 5 of the paper; `flush` reads X_h(0) and mu here
+        np.savez(f"{OUT}/ssh_invariants.npz", **out)
     return out
 
 
@@ -336,3 +363,22 @@ def flush(kind="fd", N=800, Xmax=4.0, wd=7, nT=1600,
              Delta=D, c0=float(co_h[0]), amp=amp, Pbest=Pbest,
              varexp=float(1 - r_h / tot))
     return out
+
+
+if __name__ == "__main__":
+    w = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if w in ("exact", "all"):
+        print("== exact eigenvectors =="); check_exact("fd", (200, 400, 800))
+    if w in ("count", "all"):
+        print("\n== eigenvalue counts, finite difference =="); count("fd", (200, 400, 800))
+    if w in ("decay", "all"):
+        print("\n== smooth-perturbation decay rate ==")
+        decay("fd", (400, 800), ms=(None, 40, 60))
+    if w in ("filter", "all"):
+        print("\n== filter cutoff scan (Table IV) =="); filter_scan()
+    if w in ("horizon", "all"):
+        print("\n== self-similarity horizon (Table VII) ==")
+        horizon_scalars()
+    if w in ("flush", "all"):                  # after horizon: reads its npz
+        print("\n== flush law (Table VIII) ==")
+        flush(eps=tuple(np.geomspace(0.2, 1e-4, 28)))

@@ -6,7 +6,7 @@ rough starting profile, not a deeply tuned one.  This script makes that
 falsifiable: for each family it bisects the amplitude and stores, for every
 tuning depth x = 1, 2, ... digits, a snapshot run at the deepest subcritical
 amplitude known at that point in the bisection, together with the u* that the
-docs/08 estimator extracts from that same (shallow) record.  Newton is then
+(u*, Delta) estimator of core/floquet.py extracts from that same (shallow) record.  Newton is then
 started from each and the minimum x that still converges is measured.
 
 Note that u* itself is only needed to define X = r/(u*-u); an error dust* in it
@@ -15,9 +15,11 @@ seed degrades gracefully rather than catastrophically.
 """
 import os, sys, time
 import numpy as np
-import collapse, floquet as F
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from core import collapse, floquet as F
 
-OUT = "out/dss/seeds"
+OUT = out("fixedpoint", "seeds")
 FAMILIES = {
     "G1": dict(profile="gauss",     r0=0.25, sigma=0.05),
     "T1": dict(profile="tanh",      r0=0.25, sigma=0.05),

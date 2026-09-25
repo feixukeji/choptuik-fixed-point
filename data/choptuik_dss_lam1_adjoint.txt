@@ -2,7 +2,7 @@
 # system in spherical symmetry, from the fixed-point equation
 #     S_(Delta/2)[H] + H = 0
 # solved by black-box Newton-Krylov with no tuning of initial data
-# (src/dss_newton.py; see docs/09_dss_fixed_point.md).
+# (src/fixedpoint/dss_newton.py in the code deposit cited by the paper).
 #
 # Grid:         X is PIECEWISE uniform in the first three files, with step
 #               0.01 on [0, 0.5), 0.025 on [0.5, 2) and 0.05 on [2, 4];
@@ -27,7 +27,8 @@
 #             profile, growing mode      finite differences, N = 800
 #             lam_1 mode, lam_1 adjoint  Chebyshev, N = 224
 # gamma   = 0.3739608      = 1/lam_0, from lam_0 = 2.674077202
-# lam_0   = +2.6740772     the only growing mode in this sector
+# lam_0   = +2.6740772     the one growing mode among spherical perturbations
+#                          smooth across the horizon, symmetry modes aside
 # lam_g   = +1.0000000     gauge mode u* -> u* + d; exactly 1
 # lam     =  0 (twice)     phase (T -> T + a) and constant (H -> H + c)
 # lam_1   = -0.8948202     least-damped decaying mode; first determination
@@ -81,7 +82,7 @@
 # outflow condition (Xmax = 3..6, N = 176..298), lam_1 is
 # in [-0.8990, -0.8936], a spread of 5.4e-3 -- half the quoted +-0.010 -- while
 # the next eigenvalue below spans 0.59 over the same solves, a factor of 110.
-# Table III of the paper carries this; paper_tables._matched() regenerates it.
+# Table III of the paper carries this; make_tables._matched() regenerates it.
 #
 # This fixed point sits 0.0075 slow-time units (0.22% of an echo) from the
 # phase of choptuik_dss_profile.txt.

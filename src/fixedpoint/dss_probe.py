@@ -10,9 +10,11 @@ outer boundary is outflow at every phase and no boundary condition is needed.
 """
 import os, sys, time
 import numpy as np
-import collapse, floquet as F, nullcore as nc
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from core import collapse, floquet as F, nullcore as nc
 
-OUT = "out/dss"
+OUT = out("fixedpoint")
 G1_N600_PSTAR = 0.6823132832191163
 
 

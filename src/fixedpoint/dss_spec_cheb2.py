@@ -8,9 +8,11 @@ Jacobian entries; varying eps separates that from genuine truncation.
 """
 import os, sys, time
 import numpy as np
-import dss_cheb as cb, dss_newton as dn, dss_spec_cheb as sc
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from fixedpoint import dss_cheb as cb, dss_newton as dn, dss_spec_cheb as sc
 
-OUT = "out/dss"
+OUT = out("fixedpoint")
 
 
 def respec(N, eps, Xmax=4.0):
@@ -38,7 +40,7 @@ if __name__ == "__main__":
         # truncation?  An interior eigenvalue must not move with Xmax; that is
         # necessary, not sufficient, and at fixed N this scan also coarsens the
         # grid near the horizon.  Run it at matched near-horizon spacing (raise
-        # N with Xmax) to vary the domain alone -- see paper_tables._matched.
+        # N with Xmax) to vary the domain alone -- see make_tables._matched.
         sc.run(N=int(sys.argv[2]), Xmax=float(sys.argv[3]), jac=True)
     else:
         sc.run(N=int(sys.argv[2]), jac=True)

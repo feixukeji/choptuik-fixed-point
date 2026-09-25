@@ -8,7 +8,7 @@ mu > 0, so the pull-back operator has eigenfunctions (X - X_h)^s with
 multipliers e^{-s mu t} for every complex s -- a continuum, of which only the
 integer s are analytic.  A finite-difference grid represents non-integer s
 just as happily as integer s, so its map spectrum contains that whole
-continuum; measured at N = 200 vs 400 (src/dss_sweep.py spec) every eigenvalue
+continuum; measured at N = 200 vs 400 (src/fixedpoint/dss_sweep.py spec) every eigenvalue
 except lam0, the two lam = 0 modes and the lam = 1 gauge mode drifts, which is
 that continuum being resampled.
 

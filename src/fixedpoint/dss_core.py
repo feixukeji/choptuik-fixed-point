@@ -23,7 +23,7 @@ Three things make (*) the right formulation for a fixed-point solve:
     limits direct evolution never occurs;
   * both boundaries are outflow provided X_max lies above the self-similarity
     horizon (the repelling periodic orbit of dX/dT = X - gbar/2, whose maximum
-    over the cycle is X ~ 2.5 -- measured in src/dss_probe.py), so the problem
+    over the cycle is X ~ 2.5 -- measured in src/fixedpoint/dss_probe.py), so the problem
     is closed with NO boundary conditions at all.
 
 H is even in X (regularity at the centre: phi is even in r and H = phi + X

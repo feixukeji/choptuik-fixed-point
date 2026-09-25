@@ -11,9 +11,11 @@ import sys
 import numpy as np
 from scipy.optimize import brentq
 from scipy.interpolate import CubicSpline
-import dss_core as dc, dss_cheb as cb
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from fixedpoint import dss_core as dc, dss_cheb as cb
 
-OUT = "out/dss"
+OUT = out("fixedpoint")
 
 
 def cycle(kind, N, Xmax, wd=7, nT=800):

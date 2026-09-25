@@ -1,9 +1,12 @@
 """Convergence and robustness of the DSS fixed point."""
 import sys, time, json
 import numpy as np
-import dss_core as dc, dss_check as ck, dss_newton as dn
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from fixedpoint import dss_core as dc, dss_check as ck, dss_newton as dn
 
-OUT = "out/dss"
+OUT = out("fixedpoint")
 
 
 def one(N=400, Xmax=4.0, wd=7, Delta0=3.30, Ta=3.4, cfl=0.30, jac=False,

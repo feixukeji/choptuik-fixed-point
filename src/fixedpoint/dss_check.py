@@ -11,10 +11,15 @@ equation, the boundary treatment and the derivative stencils at once.
 import sys
 import numpy as np
 from scipy.interpolate import CubicSpline
-import nullcore as nc, dss_core as dc, floquet as F
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from core import nullcore as nc, floquet as F
+from fixedpoint import dss_core as dc
 
 
-PROBE = "out/dss/probe_x10_n2400_K20.npz"
+OUT = out("fixedpoint")
+PROBE = f"{OUT}/probe_x10_n2400_K20.npz"
 
 
 def load_probe(path=PROBE, Ta=3.4, ustar=None):
@@ -69,7 +74,7 @@ def main(Ta=3.4, span=3.4455, Xmax=4.0, ustar=None):
               f"|dphi0| at T0+{span/4:.2f},{span/2:.2f},{3*span/4:.2f},{span:.2f}: "
               + " ".join(f"{np.abs(ph[i]-ref[i]):.2e}" for i in q)
               + f"  max|H|end={np.abs(Hend).max():.4f}")
-    np.savez("out/dss/check.npz", Ts=Ts, phi=ph, ref=ref, X=S.X, Hend=Hend)
+    np.savez(f"{OUT}/check.npz", Ts=Ts, phi=ph, ref=ref, X=S.X, Hend=Hend)
 
 
 if __name__ == "__main__":

@@ -18,9 +18,11 @@ Two changes over dss_spec_cheb:
 import os, sys, time
 import numpy as np
 from scipy.interpolate import CubicSpline
-import dss_cheb as cb, dss_newton as dn, dss_spec_cheb as sc
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from fixedpoint import dss_cheb as cb, dss_newton as dn, dss_spec_cheb as sc
 
-OUT = "out/dss"
+OUT = out("fixedpoint")
 _G = {}
 
 

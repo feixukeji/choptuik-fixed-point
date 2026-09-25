@@ -17,7 +17,7 @@ Four files, each with a fixed column count so that numpy.loadtxt works:
 
 The solution table comes from the finite-difference fixed point (N = 800),
 whose spectrum resolves lam_0 and the three trivial modes.  lam_1 is not
-resolvable there (docs/09 section 4.4), so its eigenvector comes from the
+resolvable there (Sec. V of the paper), so its eigenvector comes from the
 Chebyshev fixed point at N = 224, which sits at a slightly different phase
 along the DSS orbit -- the two phase conditions use different inner products.
 The offset is 0.0075 slow-time units (0.22% of an echo); after removing it the
@@ -28,7 +28,14 @@ import io
 import numpy as np
 from scipy.interpolate import CubicSpline
 import scipy.linalg as sla
-import dss_core as dc, dss_cheb as cb
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import DATA, out
+from fixedpoint import dss_core as dc, dss_cheb as cb
+
+OUT = out("fixedpoint")
+DELIVERY = DATA
 
 
 def _cc_weights(n, Xmax):
@@ -54,7 +61,7 @@ COMMON = """# Discretely self-similar (Choptuik) solution of the Einstein / mass
 # system in spherical symmetry, from the fixed-point equation
 #     S_(Delta/2)[H] + H = 0
 # solved by black-box Newton-Krylov with no tuning of initial data
-# (src/dss_newton.py; see docs/09_dss_fixed_point.md).
+# (src/fixedpoint/dss_newton.py in the code deposit cited by the paper).
 #
 # Grid:         X is PIECEWISE uniform in the first three files, with step
 #               0.01 on [0, 0.5), 0.025 on [0.5, 2) and 0.05 on [2, 4];
@@ -79,7 +86,8 @@ COMMON = """# Discretely self-similar (Choptuik) solution of the Einstein / mass
 #             profile, growing mode      finite differences, N = 800
 #             lam_1 mode, lam_1 adjoint  Chebyshev, N = 224
 # gamma   = 0.3739608      = 1/lam_0, from lam_0 = 2.674077202
-# lam_0   = +2.6740772     the only growing mode in this sector
+# lam_0   = +2.6740772     the one growing mode among spherical perturbations
+#                          smooth across the horizon, symmetry modes aside
 # lam_g   = +1.0000000     gauge mode u* -> u* + d; exactly 1
 # lam     =  0 (twice)     phase (T -> T + a) and constant (H -> H + c)
 # lam_1   = -0.8948202     least-damped decaying mode; first determination
@@ -111,7 +119,7 @@ COMMON = """# Discretely self-similar (Choptuik) solution of the Einstein / mass
 
 
 def main():
-    f = np.load("out/dss/spec_N800_X4_w7.npz")
+    f = np.load(f"{OUT}/spec_N800_X4_w7.npz")
     X, H = f["X"], f["H"]
     S = dc.Sim(N=800, Xmax=4.0, wd=7)
     hb, g, gb = S.fields(H)
@@ -127,7 +135,7 @@ def main():
            "# differences, 6-point cumulative quadrature, Newton residual\n"
            f"# 4.4e-12; this solve's own period is Delta = {float(f['Delta']):.10f}.\n"
            "#\n#      X            H              Hbar(=phi)        g              gbar\n")
-    with open("data/choptuik_dss_profile.txt", "w") as fh:
+    with open(f"{DELIVERY}/choptuik_dss_profile.txt", "w") as fh:
         fh.write(hdr)
         for row in zip(XT, V["H"], V["hb"], V["g"], V["gb"]):
             fh.write("".join(f"{c:15.9f}" for c in row) + "\n")
@@ -140,7 +148,7 @@ def main():
         v = -v
     v /= np.abs(v).max()
     Dfd = float(f["Delta"])
-    with open("data/choptuik_dss_growing_mode.txt", "w") as fh:
+    with open(f"{DELIVERY}/choptuik_dss_growing_mode.txt", "w") as fh:
         fh.write(COMMON + f"""#
 # Growing-mode eigenvector of the SAME (finite-difference, N = 800) fixed
 # point, whose own period is Delta = {Dfd:.10f}: normalized to peak 1, with
@@ -158,7 +166,7 @@ def main():
     # everything else; the left eigenvector is NOT -- it alternates at the grid scale and
     # has no pointwise continuum limit -- so it is written on its own
     # collocation nodes, where the biorthogonal pairing is a plain dot product.
-    fc = np.load("out/dss/cheb_N224_X4.npz")
+    fc = np.load(f"{OUT}/cheb_N224_X4.npz")
     Xc, Hc, Dc = fc["X"], fc["H"], float(fc["Delta"])
     nu2, VL2, VR2 = sla.eig(fc["J"], left=True, right=True)
     lam2 = np.log(nu2.astype(complex) ** 2) / Dc
@@ -197,12 +205,12 @@ def main():
 # outflow condition (Xmax = 3..6, N = 176..298), lam_1 is
 # in [-0.8990, -0.8936], a spread of 5.4e-3 -- half the quoted +-0.010 -- while
 # the next eigenvalue below spans 0.59 over the same solves, a factor of 110.
-# Table III of the paper carries this; paper_tables._matched() regenerates it.
+# Table III of the paper carries this; make_tables._matched() regenerates it.
 #
 # This fixed point sits 0.0075 slow-time units (0.22% of an echo) from the
 # phase of choptuik_dss_profile.txt.
 """
-    with open("data/choptuik_dss_lam1_mode.txt", "w") as fh:
+    with open(f"{DELIVERY}/choptuik_dss_lam1_mode.txt", "w") as fh:
         fh.write(COMMON + LAM1 + """#
 # Its own background H is therefore given here alongside the mode, so that mode
 # and background are consistent.  It is RESAMPLED onto the piecewise-uniform
@@ -254,7 +262,7 @@ def main():
     anorm = float(abs(wf @ vf - 1.0))
     assert exf == 0.0 and azero == 0.0, "the body no longer round-trips"
 
-    with open("data/choptuik_dss_lam1_adjoint.txt", "w") as fh:
+    with open(f"{DELIVERY}/choptuik_dss_lam1_adjoint.txt", "w") as fh:
         fh.write(COMMON + LAM1 + f"""#
 # LEFT eigenvector w_1 of the half-period map, w J = nu_1 w: the receptivity.
 # It is the instrument of the biorthogonal projection a_1 = <w_1, dH> used in

@@ -20,9 +20,11 @@ codimension-one threshold, which it could.
 import os, sys, time
 import numpy as np
 from scipy.interpolate import CubicSpline
-import dss_cheb as cb, dss_newton as dn, dss_check as ck
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from fixedpoint import dss_cheb as cb, dss_newton as dn, dss_check as ck
 
-OUT = "out/dss"
+OUT = out("fixedpoint")
 
 
 def seed_on(S, Ta=3.4, path=None):

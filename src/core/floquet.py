@@ -6,14 +6,12 @@ Motivation
 Martin-Garcia & Gundlach (1999) could measure the perturbation eigenvalues of
 the Choptuik solution only because the critical solution had first been
 CONSTRUCTED, so that the equations could be linearised about it and the
-resulting linear system evolved.  For the axisymmetric vacuum threshold no such
-background exists, and the eigenvalue that governs every family-comparison
-statement -- the least-damped decaying mode lambda_1 -- has therefore never
-been measured for any vacuum threshold solution.
+resulting linear system evolved.
 
-This module asks whether lambda_1 can instead be read directly off a tuned
-NONLINEAR evolution, using nothing but the recorded time series of one central
-observable.  The spherical massless scalar is the validation case, because
+This module asks whether the least-damped decaying mode lambda_1 can instead
+be read directly off a tuned NONLINEAR evolution, using nothing but the
+recorded time series of one central observable.  The spherical massless
+scalar is the validation case, because
 there both Delta = 3.445452402(3) and lambda_0 = 1/gamma = 2.674 are known
 independently.
 

@@ -2,14 +2,16 @@
 Extract a seed profile H(X) for the DSS fixed-point solve.
 
 One near-critical subcritical evolution of family G1, with profile snapshots.
-u* is fitted from the central-field record (src/floquet.fit_iterate), then the
+u* is fitted from the central-field record (core/floquet.fit_iterate), then the
 snapshots are mapped to self-similar coordinates X = r/(u*-u), H = h.
 """
 import os, sys, time
 import numpy as np
-import collapse, floquet as F
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from core import collapse, floquet as F
 
-OUT = "out/dss"
+OUT = out("fixedpoint")
 G1_N600_PSTAR = 0.6823132832191163
 
 

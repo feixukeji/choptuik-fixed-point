@@ -1,5 +1,5 @@
-"""Figures for paper A (docs/10_paper_plan.md).  Writes paper/figs/*.pdf."""
-import os, glob, re, json
+"""Figures for the paper.  Writes ./figs/*.pdf."""
+import os, sys, glob, re, json
 import numpy as np
 import scipy.linalg as sla
 import matplotlib
@@ -7,7 +7,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
 
-OUT, FIG = "out/dss", "paper/figs"
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "src"))
+from paths import out                                          # noqa: E402
+
+OUT, FIG = out("fixedpoint"), os.path.join(HERE, "figs")
 DELTA_REF = 3.445452402
 XH0, XHMIN, XHMAX = 1.352471, 1.297337, 1.560820
 
@@ -74,7 +78,7 @@ def cheb_files():
 def fig_solution():
     d = np.load(f"{OUT}/spec_N800_X4_w7.npz")
     X, H, D = d["X"], d["H"], float(d["Delta"])
-    import dss_core as dc
+    from fixedpoint import dss_core as dc
     S = dc.Sim(N=len(X), Xmax=X[-1], wd=7)
     hb, g, gb = S.fields(H)
     fig, ax = plt.subplots(1, 2, figsize=(6.9, 2.25),
@@ -246,9 +250,9 @@ def fig_spectrum():
     # At fixed N the triangles vary the domain AND the near-horizon node
     # spacing.  The second series holds the spacing fixed by raising N with
     # X_max, so that only the boundary moves; without it neither effect is
-    # bounded on its own.  The set is chosen by paper_tables._matched so the
+    # bounded on its own.  The set is chosen by make_tables._matched so the
     # figure and Table III always show the same solves.
-    import paper_tables as pt
+    import make_tables as pt          # this directory
     mrow, href = pt._matched(pt._scan())
     mx = [r[1] for r in mrow]
     my = [r[4].real for r in mrow]

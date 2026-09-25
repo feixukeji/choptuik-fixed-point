@@ -30,9 +30,11 @@ import os, sys, time
 import numpy as np
 from scipy.interpolate import CubicSpline
 from scipy.sparse.linalg import LinearOperator, gmres
-import dss_core as dc
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from fixedpoint import dss_core as dc
 
-OUT = "out/dss"
+OUT = out("fixedpoint")
 DELTA_REF = 3.445452402       # Gundlach 1997
 LAM0_REF = 1.0 / 0.374
 
@@ -117,7 +119,7 @@ def spectrum(J, Delta):
 
 def main(N=400, Xmax=4.0, wd=7, Delta0=3.30, Ta=3.4, cfl=0.30,
          jac=True, tag=""):
-    import dss_check as ck
+    from fixedpoint import dss_check as ck
     os.makedirs(OUT, exist_ok=True)
     d, us, T, k = ck.load_probe(Ta=Ta)
     S, H0, tau = ck.seed(d, us, k, N=N, Xmax=Xmax, wd=wd)

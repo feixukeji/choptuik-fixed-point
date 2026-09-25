@@ -38,10 +38,12 @@ import numpy as np
 import scipy.linalg as sla
 from scipy.interpolate import CubicSpline, barycentric_interpolate
 
-import collapse, floquet as F
-import dss_cheb as cb, dss_newton as dn, dss_hires as hr
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from core import collapse, floquet as F
+from fixedpoint import dss_cheb as cb, dss_newton as dn, dss_hires as hr
 
-OUT = "out/dss"
+OUT = out("fixedpoint")
 P0 = 0.6823132832191163          # G1 (gauss r0=.25 s=.05) at n=600
 XH_MAX = 1.560820                # max over the cycle of the horizon
 

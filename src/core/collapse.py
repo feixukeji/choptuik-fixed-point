@@ -6,7 +6,10 @@ The null grid is Lagrangian in v and therefore zooms in on the self-similar
 structure automatically (Garfinkle 1995): no adaptive mesh refinement.
 """
 import numpy as np
-import nullcore as nc
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from core import nullcore as nc
 
 NSCRATCH = 16
 

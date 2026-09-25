@@ -1,4 +1,6 @@
 __pycache__/
 *.pyc
+*.nbi
+*.nbc
 paper/tables/*.tex
 paper/figs/*.pdf

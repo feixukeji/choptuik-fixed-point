@@ -1,10 +1,15 @@
-"""LaTeX tables for paper A.  Writes paper/tables/*.tex from out/dss/*."""
-import os, re, glob, json
+"""LaTeX tables for the paper.  Writes ./tables/*.tex from out/fixedpoint/*."""
+import os, re, sys, glob, json
 import numpy as np
 import scipy.linalg as sla
-import dss_core as dc, dss_cheb as cb, dss_spectrum as sp, nullcore as nc
 
-OUT, TAB = "out/dss", "paper/tables"
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "src"))
+from paths import out                                          # noqa: E402
+from core import nullcore as nc                                # noqa: E402
+from fixedpoint import dss_core as dc, dss_cheb as cb, dss_spectrum as sp   # noqa: E402
+
+OUT, TAB = out("fixedpoint"), os.path.join(HERE, "tables")
 BS = "\\\\"
 
 
@@ -23,7 +28,7 @@ RT_K = 1.72272620111391067498575597278819186222103458805781088634788403570540
 RT_MU = 0.16830707896344996951013497904285742072100199080892966476395293134873
 MU_RT_EXACT = 2 * np.pi * RT_MU / RT_K
 MULT_RT_EXACT = np.exp(4 * np.pi * RT_MU)
-# horizon_scalars('fd', N, 4.0, 7, 1600), see docs/03 section O.
+# horizon_scalars('fd', N, 4.0, 7, 1600) (src/fixedpoint/dss_spectrum.py).
 MU_N = {200: 0.613884169, 400: 0.613853436, 800: 0.613855182}
 
 
@@ -99,7 +104,7 @@ def t_conv():
 
 # Full-width floats carry [!t] and never [p]: a two-column float can only sit
 # at a page top or on a float page, and letting them take float pages leaves
-# pages holding one figure and its caption (Sec. U of docs/03_progress.md).
+# pages holding one figure and its caption.
 # ------------------------------------------------------------------ exact
 def t_exact(Ns=(200, 400, 800)):
     res = {}
@@ -407,7 +412,7 @@ def t_lam2():
     # quote: no single scan varies one variable only (see t_lam1's caption).
     # Xmax = 2.5 is excluded because it violates the outflow condition
     # Eq. (outflow): its lowest boundary speed over the cycle is -0.0316
-    # (out/dss/outflow.npz), inflow at 40 of 818 sampled phases.  Dropping it
+    # (out/fixedpoint/outflow.npz), inflow at 40 of 818 sampled phases.  Dropping it
     # leaves the envelope, the next-eigenvalue spread and their ratio
     # unchanged; it changes 16 solves over Xmax = 2.5..6 into 15 over 3..6.
     XCRIT = 2.5404

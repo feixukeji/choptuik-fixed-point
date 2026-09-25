@@ -2,7 +2,7 @@
 How much tuning does the fixed-point route actually need?
 
 The direct method needs the deepest bisection double precision allows (~15
-digits) and still yields Delta to only ~0.1% (docs/08 A).  Here tuning enters
+digits).  Here tuning enters
 only through the SEED; Newton then solves an equation that knows nothing about
 initial data.  So the question is: from how shallow a bisection can a seed
 still be built?
@@ -25,15 +25,18 @@ The seed needs neither u* nor a prior value of Delta.
          magnitude along a run, and an earlier version of this script sampled
          three of ~300 and concluded, wrongly, that shallow seeds never work.
 
-Reference point: the seed used for the main solve (docs/09) has q = 0.19.
+Reference point: the seed used for the main solve has q = 0.19.
 """
 import os, sys, glob, json, time
 import numpy as np
 from scipy.interpolate import CubicSpline
-import nullcore as nc, dss_core as dc, dss_newton as dn
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+from paths import out
+from core import nullcore as nc
+from fixedpoint import dss_core as dc, dss_newton as dn
 
-OUT = "out/dss"
-SEEDS = "out/dss/seeds"
+OUT = out("fixedpoint")
+SEEDS = out("fixedpoint", "seeds")
 RHOS = (1.8, 2.2, 2.6, 3.0, 3.5, 4.0)
 DGRID = np.arange(2.60, 4.401, 0.15)
 
@@ -85,12 +88,12 @@ def refine(S, d, best, k_ms=0, cfl=0.30, D0s=None):
     Newton from the scanned seed, over a grid of Delta_0.
 
     The scan's own Delta minimiser is only accurate to the scan grid and can
-    land outside Newton's basin (which is contained in (3.0, 3.8) at N = 200,
-    docs/09 section 5) -- G1_x5 failed that way with a BETTER seed than T1_x5,
+    land outside Newton's basin (at N = 200 only Delta_0 = 3.30 and 3.60 of the
+    values tried converge, Sec. VII of the paper) -- G1_x5 failed that way with a BETTER seed than T1_x5,
     which succeeded.  Separating the two, the acceptance test stays blind: the
     criterion is the residual, never agreement with a published Delta.
 
-    k_ms > 0 also tries multiple shooting, which docs/09 section 5b measured to
+    k_ms > 0 also tries multiple shooting, which Appendix C of the paper found to
     be *worse* here (plain GMRES does not converge on the block-bidiagonal
     system), so it is off by default.
     """
